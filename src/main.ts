@@ -8,7 +8,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
+  const prefix = process.env.NODE_ENV === 'production' ? '' : 'api';
+
+  app.setGlobalPrefix(prefix);
 
   const config = new DocumentBuilder()
     .setTitle('Connexio Backend')
@@ -23,9 +25,13 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 3000;
 
-  logger.log(`Server started on: `);
-  logger.log('Swagger is running on: ');
+  await app.listen(port, '127.0.0.1');
+
+  const url = await app.getUrl();
+
+  logger.log(`Server started on: ${url}${prefix ? "/" + prefix : ""}`);
+  logger.log(`Swagger is running on: ${url}${prefix ? '/' + prefix : ''}/docs`);
 }
 void bootstrap();
