@@ -5,3 +5,14 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+
+model User {
+  id  string  @id  @default(uuid())
+  email  string  @unique()
+  passwordHash string
+  nickname  string  @unique()
+
+  createdAt DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
