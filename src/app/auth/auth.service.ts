@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../infrastracture/prisma/prisma.service';
 import { RedisService } from '../../infrastracture/redis/redis.service';
+import { AuthenticationDto } from './dto/auth-request.dto';
 
 @Injectable()
 export class AuthService {
@@ -9,9 +10,11 @@ export class AuthService {
     private readonly redisService: RedisService,
   ) {}
 
-  login() {}
+  login(data: AuthenticationDto) {
+    const { email, password } = data;
+  }
 
-  register() {}
+  register(data: AuthenticationDto) {}
 
   profile() {}
 }
