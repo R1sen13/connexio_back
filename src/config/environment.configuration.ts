@@ -10,4 +10,10 @@ export const environmentConfig = Joi.object({
       scheme: ['postgres', 'postgresql'],
     })
     .required(),
+
+  REDIS_URL: Joi.string()
+    .uri({
+      scheme: ['redis'],
+    })
+    .required(),
 }).unknown(true);
