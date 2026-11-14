@@ -8,9 +8,9 @@ datasource db {
 
 
 model User {
-  id  string  @id  @default(uuid())
-  email  string  @unique()
-  passwordHash string
+  id  String  @id  @default(uuid())
+  email  String  @unique()
+  passwordHash String
 
   createdAt DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
