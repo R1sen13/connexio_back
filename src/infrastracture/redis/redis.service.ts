@@ -11,6 +11,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client = createClient({
       url: this.configService.getOrThrow<string>('REDIS_URL'),
     });
+
+    this.client.on('error', (error) => {
+      this.logger.error(`Redis error: ${error.stack}`);
+    });
   }
 
   async onModuleInit() {
