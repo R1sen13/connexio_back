@@ -10,5 +10,4 @@ export const environmentConfig = Joi.object({
       scheme: ['postgres', 'postgresql'],
     })
     .required(),
-
 }).unknown(true);

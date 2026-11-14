@@ -39,7 +39,7 @@ async function bootstrap() {
 
   const url = await app.getUrl();
 
-  logger.log(`Server started on: ${url}${prefix ? "/" + prefix : ""}`);
+  logger.log(`Server started on: ${url}${prefix ? '/' + prefix : ''}`);
   logger.log(`Swagger is running on: ${url}${prefix ? '/' + prefix : ''}/docs`);
 }
 void bootstrap();
