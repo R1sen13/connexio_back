@@ -6,6 +6,7 @@ import { environmentConfig } from './config/environment.configuration';
 import { PrismaModule } from './infrastracture/prisma/prisma.module';
 import { RedisModule } from './infrastracture/redis/redis.module';
 import { AuthModule } from './app/auth/auth.module';
+import { SecurityModule } from './common/security/security.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './app/auth/auth.module';
     }),
     PrismaModule,
     RedisModule,
+    SecurityModule,
     HealthModule,
     AuthModule,
   ],

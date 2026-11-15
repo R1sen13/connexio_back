@@ -11,8 +11,13 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() data: AuthenticationDto, @Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const authPath = process.env.NODE_ENV === 'production' ? '/auth' : '/api/auth';
+    res.clearCookie('access_token', {
+      path: '/',
+    });
+    res.clearCookie('refresh_token', {
+      path: authPath,
+    });
 
     const { accessToken, refreshToken } = await this.authService.login(data);
 
@@ -21,6 +26,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: Number(process.env.JWT_ACCESS_EXP) * 1000,
+      path: '/',
     });
 
     res.cookie('refresh_token', refreshToken, {
@@ -28,13 +34,23 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: Number(process.env.JWT_REFRESH_EXP) * 1000,
+      path: authPath,
     });
+
+    return {
+      success: true,
+    };
   }
 
   @Post('register')
   async register(@Body() data: AuthenticationDto, @Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const authPath = process.env.NODE_ENV === 'production' ? '/auth' : '/api/auth';
+    res.clearCookie('access_token', {
+      path: '/',
+    });
+    res.clearCookie('refresh_token', {
+      path: authPath,
+    });
 
     const { accessToken, refreshToken } = await this.authService.register(data);
 
@@ -43,6 +59,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: Number(process.env.JWT_ACCESS_EXP) * 1000,
+      path: '/',
     });
 
     res.cookie('refresh_token', refreshToken, {
@@ -50,7 +67,12 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: Number(process.env.JWT_REFRESH_EXP) * 1000,
+      path: authPath,
     });
+
+    return {
+      success: true,
+    };
   }
 
   @Get('me')

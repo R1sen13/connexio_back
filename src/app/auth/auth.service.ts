@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../infrastracture/prisma/prisma.service';
 import { RedisService } from '../../infrastracture/redis/redis.service';
 import { AuthenticationDto } from './dto/auth-request.dto';
@@ -33,16 +33,7 @@ export class AuthService {
 
     this.logger.debug(`User ${user.id} has logged in`);
 
-    const sessionId = await this.createSession();
-
-    const { accessToken, refreshToken } = await this.generateTokens(user.id, sessionId);
-
-    await this.createRedisSession(user.id, sessionId, refreshToken);
-
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return this.createAuthSession(user.id);
   }
 
   async register(data: AuthenticationDto) {
@@ -67,16 +58,7 @@ export class AuthService {
 
     this.logger.debug(`Registered user: ${user.id}`);
 
-    const sessionId = await this.createSession();
-
-    const { accessToken, refreshToken } = await this.generateTokens(user.id, sessionId);
-
-    await this.createRedisSession(user.id, sessionId, refreshToken);
-
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return this.createAuthSession(user.id);
   }
 
   async profile(userId: string) {
@@ -87,7 +69,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new UnauthorizedException('User is not authorized');
     }
 
     return new ProfileResponse(user);
@@ -123,9 +105,14 @@ export class AuthService {
     };
   }
 
-  async createSession() {
-    const sessionId: string = randomUUID();
-    return sessionId;
+  private async createAuthSession(userId: string) {
+    const sessionId = randomUUID();
+
+    const tokens = await this.generateTokens(userId, sessionId);
+
+    await this.createRedisSession(userId, sessionId, tokens.refreshToken);
+
+    return tokens;
   }
 
   async createRedisSession(userId: string, sessionId: string, refreshToken: string) {
