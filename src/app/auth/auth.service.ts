@@ -24,11 +24,11 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Authentication error! Try again');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!(await verifyData(user.passwordHash, password))) {
-      throw new BadRequestException('Authentication error! Try again');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     this.logger.debug(`User ${user.id} has logged in`);
