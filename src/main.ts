@@ -19,6 +19,17 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: [
+      'http://localhost:5173',
+      'http://172.18.0.1:5173',
+      'http://192.168.56.1:5173',
+      'http://192.168.0.14:5173',
+      'http://172.21.112.1:5173',
+    ],
+    credentials: true,
+  });
+
   const prefix = process.env.NODE_ENV === 'production' ? '' : 'api';
 
   app.setGlobalPrefix(prefix);
