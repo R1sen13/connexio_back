@@ -61,6 +61,86 @@ export class AuthService {
     return this.createAuthSession(user.id);
   }
 
+  async refresh(refreshToken: string) {
+    const redis = this.redisService.getClient();
+    let payload;
+
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+      if (payload.type !== 'refresh') {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      if (!payload.sub || !payload.sid) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const sessionKey = `auth:session:${payload.sid}`;
+
+    const session = await redis.hGetAll(sessionKey);
+
+    if (Object.keys(session).length === 0) {
+      throw new UnauthorizedException('Session expired');
+    }
+
+    if (session.userId !== payload.sub) {
+      throw new UnauthorizedException('Invalid session');
+    }
+
+    const receivedTokenHash = createHash('sha256').update(refreshToken).digest('hex');
+
+    if (receivedTokenHash !== session.refreshTokenHash) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const tokens = await this.createAuthSession(payload.sub);
+
+    await redis.del(sessionKey);
+
+    return tokens;
+  }
+
+  async logout(refreshToken: string) {
+    const redis = this.redisService.getClient();
+    let payload;
+
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+      if (payload.type !== 'refresh') {
+        return;
+      }
+
+      if (!payload.sub || !payload.sid) {
+        return;
+      }
+    } catch {
+      return;
+    }
+
+    const sessionKey = `auth:session:${payload.sid}`;
+
+    const session = await redis.hGetAll(sessionKey);
+
+    if (Object.keys(session).length === 0) {
+      return;
+    }
+
+    if (session.userId !== payload.sub) {
+      return;
+    }
+
+    await redis.del(sessionKey);
+  }
+
   async profile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: {
