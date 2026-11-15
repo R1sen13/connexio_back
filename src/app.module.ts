@@ -5,6 +5,7 @@ import { HealthModule } from './app/health/health.module';
 import { environmentConfig } from './config/environment.configuration';
 import { PrismaModule } from './infrastracture/prisma/prisma.module';
 import { RedisModule } from './infrastracture/redis/redis.module';
+import { AuthModule } from './app/auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RedisModule } from './infrastracture/redis/redis.module';
     PrismaModule,
     RedisModule,
     HealthModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

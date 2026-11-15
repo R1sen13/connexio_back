@@ -16,4 +16,10 @@ export const environmentConfig = Joi.object({
       scheme: ['redis'],
     })
     .required(),
+
+  JWT_ACCESS_SECRET: Joi.string().min(32).required(),
+  JWT_REFRESH_SECRET: Joi.string().min(32).required(),
+
+  JWT_ACCESS_EXP: Joi.number().integer().positive().default(1800),
+  JWT_REFRESH_EXP: Joi.number().integer().positive().default(1209600),
 }).unknown(true);
