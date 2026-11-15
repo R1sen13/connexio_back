@@ -4,6 +4,7 @@ import { PrismaService } from '../../infrastracture/prisma/prisma.service';
 import { RedisService } from '../../infrastracture/redis/redis.service';
 import { JwtService } from '@nestjs/jwt';
 import { hashData, verifyData } from '../../common/helpers/hash-verify.helper';
+import { createHash } from 'node:crypto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -158,6 +159,52 @@ describe('AuthService', () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
 
     await expect(service.profile('user-id')).rejects.toThrow('User is not authorized');
+  });
+
+  it('rotates refresh session', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({
+      sub: 'user-id',
+      sid: 'old-session-id',
+      type: 'refresh',
+    });
+
+    const tokenHash = createHash('sha256').update('refresh-token').digest('hex');
+
+    redisClientMock.hGetAll.mockResolvedValue({
+      userId: 'user-id',
+      refreshTokenHash: tokenHash,
+      createdAt: new Date().toISOString(),
+    });
+
+    jwtMock.signAsync
+      .mockResolvedValueOnce('new-access-token')
+      .mockResolvedValueOnce('new-refresh-token');
+
+    const result = await service.refresh('refresh-token');
+
+    expect(result).toEqual({
+      accessToken: 'new-access-token',
+      refreshToken: 'new-refresh-token',
+    });
+
+    expect(redisClientMock.del).toHaveBeenCalledWith('auth:session:old-session-id');
+  });
+
+  it('deletes session on logout', async () => {
+    jwtMock.verifyAsync.mockResolvedValue({
+      sub: 'user-id',
+      sid: 'session-id',
+      type: 'refresh',
+    });
+
+    redisClientMock.hGetAll.mockResolvedValue({
+      userId: 'user-id',
+      refreshTokenHash: 'hash',
+    });
+
+    await service.logout('refresh-token');
+
+    expect(redisClientMock.del).toHaveBeenCalledWith('auth:session:session-id');
   });
 
   it('hashes and verifies password', async () => {
