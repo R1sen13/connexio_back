@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { hashData, verifyData } from '../../common/helpers/hash-verify.helper';
 import { createHash, randomUUID } from 'node:crypto';
 import { ProfileResponse } from './dto/auth-response.dto';
+import { RefreshPayload } from '../../common/types/token-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -63,7 +64,7 @@ export class AuthService {
 
   async refresh(refreshToken: string) {
     const redis = this.redisService.getClient();
-    let payload;
+    let payload: RefreshPayload;
 
     try {
       payload = await this.jwtService.verifyAsync(refreshToken, {
@@ -108,7 +109,7 @@ export class AuthService {
 
   async logout(refreshToken: string) {
     const redis = this.redisService.getClient();
-    let payload;
+    let payload: RefreshPayload;
 
     try {
       payload = await this.jwtService.verifyAsync(refreshToken, {
