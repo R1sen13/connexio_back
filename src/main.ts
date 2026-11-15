@@ -25,9 +25,18 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Connexio Backend')
-    .setDescription('Connexio Swagger API')
+    .setDescription('API для управления пользователями, документами и связями Connexio.')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addCookieAuth('access_token', {
+      type: 'apiKey',
+      in: 'cookie',
+      description: 'HttpOnly cookie с access JWT.',
+    })
+    .addCookieAuth('refresh_token', {
+      type: 'apiKey',
+      in: 'cookie',
+      description: 'HttpOnly cookie с refresh JWT.',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
